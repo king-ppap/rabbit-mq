@@ -2,6 +2,7 @@
 Remote procedure call (RPC)
 [(Read more)](https://www.rabbitmq.com/tutorials/tutorial-six-javascript.html)
 ![RPC protocal](https://www.rabbitmq.com/img/tutorials/python-six.png)
+
 Server calculate Fibonacci number at (N)
 
 ## Setup
