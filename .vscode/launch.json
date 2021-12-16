@@ -1,0 +1,18 @@
+{
+  "configurations": [
+    {
+      "type": "aws-sam",
+      "request": "direct-invoke",
+      "name": "sam-app:MQConsumer",
+      "invokeTarget": {
+        "target": "template",
+        "templatePath": "${workspaceFolder}/aws/sam-app/template.yaml",
+        "logicalId": "MQConsumer"
+      },
+      "lambda": {
+        "payload": {},
+        "environmentVariables": {}
+      }
+    }
+  ]
+}

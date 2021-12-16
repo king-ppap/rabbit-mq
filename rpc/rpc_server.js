@@ -1,46 +1,59 @@
-var amqp = require('amqplib/callback_api');
+var amqp = require('amqplib');
 
 connectMQ();
 
-function connectMQ() {
-  amqp.connect('amqp://localhost', function (error0, connection) {
-    if (error0) {
-      console.warn(`${new Date().toISOString()}: retry connect in 3 sec`);
-      setTimeout(connectMQ, 3000);
-      return error0;
+async function connectMQ() {
+  let connection;
+  let channel;
+  try {
+    const options = {
+      credentials: amqp.credentials.plain("rabbitMQtest", "rabbitMQTestRabbitMQ")
     }
-    connection.createChannel(function (error1, channel) {
-      if (error1) {
-        throw error1;
-      }
-      var queue = 'rpc_queue';
+    connection = await amqp.connect(
+      'amqps://b-3ff2d6ff-063c-4ae5-a6d9-1a1f26d2897e.mq.ap-southeast-1.amazonaws.com:5671',
+      options,
+    );
+  } catch (error) {
+    console.warn(`${new Date().toISOString()}: Error: retry connect in 3 sec`);
+    setTimeout(connectMQ, 3000);
+    return error;
+  }
 
-      channel.assertQueue(queue, {
-        durable: false
-      });
-      channel.prefetch(1);
-      console.log(' [x] Awaiting RPC requests');
-      channel.consume(queue, function reply(msg) {
-        var n = parseInt(msg.content.toString());
+  try {
+    channel = await connection.createChannel();
+  } catch (error) {
+    console.warn(`${new Date().toISOString()}: Error: createChannel retry in 3 sec`);
+    setTimeout(connectMQ, 3000);
+    return error;
+  }
 
-        console.log(" [.] fib(%d)", n);
 
-        let r;
-        try {
-          r = fibonacci(n);
-        } catch (error) {
-          r = error
-        }
+  const queue = 'rpc_queue';
 
-        channel.sendToQueue(msg.properties.replyTo,
-          Buffer.from(r.toString()), {
-          correlationId: msg.properties.correlationId
-        });
+  channel.assertQueue(queue, {
+    durable: false
+  });
+  channel.prefetch(1);
+  console.log(' [x] Awaiting RPC requests');
+  channel.consume(queue, function reply(msg) {
+    let n = parseInt(msg.content.toString());
 
-        console.log(` [>] fin(${n}) ack ${r} to ${msg.properties.replyTo}`);
-        channel.ack(msg);
-      });
+    console.log(" [.] fib(%d)", n);
+
+    let r;
+    try {
+      r = fibonacci(n);
+    } catch (error) {
+      r = error
+    }
+
+    channel.sendToQueue(msg.properties.replyTo,
+      Buffer.from(r.toString()), {
+      correlationId: msg.properties.correlationId
     });
+
+    console.log(` [>] fin(${n}) ack ${r} to ${msg.properties.replyTo}`);
+    channel.ack(msg);
   });
 }
 

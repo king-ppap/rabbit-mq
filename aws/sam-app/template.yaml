@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Amazon MQ for RabbitMQ Example
+
+Resources:
+  MQBroker:
+    Type: AWS::AmazonMQ::Broker
+    Properties: 
+      AutoMinorVersionUpgrade: false
+      BrokerName: KingQueue
+      DeploymentMode: SINGLE_INSTANCE
+      EngineType: RABBITMQ
+      EngineVersion: "3.8.23"
+      HostInstanceType: mq.t3.micro
+      PubliclyAccessible: true
+      Users:
+        - Password: '{{resolve:secretsmanager:MQAccessKingOnHuy:SecretString:password}}'
+          Username: '{{resolve:secretsmanager:MQAccessKingOnHuy:SecretString:username}}'
+          
+          
+  MQConsumer1:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: hello_world/
+      Timeout: 3
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Resource: '*'
+              Action:
+              - mq:DescribeBroker
+              - secretsmanager:GetSecretValue
+              - ec2:CreateNetworkInterface
+              - ec2:DescribeNetworkInterfaces
+              - ec2:DescribeVpcs
+              - ec2:DeleteNetworkInterface
+              - ec2:DescribeSubnets
+              - ec2:DescribeSecurityGroups
+      Events:
+        MQEvent:
+          Type: MQ
+          Properties:
+            Broker: !GetAtt MQBroker.Arn
+            Queues:
+              - KingQueue1
+            SourceAccessConfigurations:
+              - Type: BASIC_AUTH
+                URI: 'arn:aws:secretsmanager:ap-southeast-1:442641165997:secret:MQAccessKingOnHuy-sttl1N'
+
+
+  MQConsumer2:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: hello_world/
+      Timeout: 3
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Resource: '*'
+              Action:
+              - mq:DescribeBroker
+              - secretsmanager:GetSecretValue
+              - ec2:CreateNetworkInterface
+              - ec2:DescribeNetworkInterfaces
+              - ec2:DescribeVpcs
+              - ec2:DeleteNetworkInterface
+              - ec2:DescribeSubnets
+              - ec2:DescribeSecurityGroups
+      Events:
+        MQEvent:
+          Type: MQ
+          Properties:
+            Broker: !GetAtt MQBroker.Arn
+            Queues:
+              - KingQueue2
+            SourceAccessConfigurations:
+              - Type: BASIC_AUTH
+                URI: 'arn:aws:secretsmanager:ap-southeast-1:442641165997:secret:MQAccessKingOnHuy-sttl1N'
