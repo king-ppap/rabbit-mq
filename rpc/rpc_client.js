@@ -28,6 +28,7 @@ async function connectMQ() {
     return error;
   }
 
+  // Generate new queue name like "amqp.gen-Xa2…"
   channel.assertQueue('', { exclusive: true })
     .then((q) => {
       const correlationId = generateUuid();

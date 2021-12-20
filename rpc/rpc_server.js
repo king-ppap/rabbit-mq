@@ -1,4 +1,4 @@
-var amqp = require('amqplib');
+const amqp = require('amqplib');
 
 connectMQ();
 
@@ -28,7 +28,7 @@ async function connectMQ() {
     return error;
   }
 
-
+  // Queue name for RPC
   const queue = 'rpc_queue';
 
   channel.assertQueue(queue, {
