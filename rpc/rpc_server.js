@@ -6,12 +6,13 @@ async function connectMQ() {
   let connection;
   let channel;
   try {
-    const options = {
-      credentials: amqp.credentials.plain("rabbitMQtest", "rabbitMQTestRabbitMQ")
-    }
+    // const options = {
+    //   credentials: amqp.credentials.plain("rabbitMQtest", "rabbitMQTestRabbitMQ")
+    // }
     connection = await amqp.connect(
-      'amqps://b-3ff2d6ff-063c-4ae5-a6d9-1a1f26d2897e.mq.ap-southeast-1.amazonaws.com:5671',
-      options,
+      // 'amqps://b-3ff2d6ff-063c-4ae5-a6d9-1a1f26d2897e.mq.ap-southeast-1.amazonaws.com:5671',
+      // options,
+      'amqp://localhost',
     );
   } catch (error) {
     console.warn(`${new Date().toISOString()}: Error: retry connect in 3 sec`);
