@@ -15,7 +15,7 @@ async function connectMQ() {
   try {
     connection = await amqp.connect('amqp://localhost')
   } catch (error) {
-    console.warn(`${new Date().toISOString()}: retry connect in 3 sec`);
+    console.warn(`${new Date().toISOString()}: Error: retry connect in 3 sec`);
     setTimeout(connectMQ, 3000);
     return error;
   }
@@ -34,11 +34,11 @@ async function connectMQ() {
       const correlationId = generateUuid();
       const num = parseInt(args[0]);
 
-      console.log(' [x] Requesting fib(%d)', num);
+      console.log(` [x] Requesting fib(${num}) reply_to=[${q.queue}]`);
 
       channel.consume(q.queue, function (msg) {
         if (msg.properties.correlationId == correlationId) {
-          console.log(' [.] Got %s', msg.content.toString());
+          console.log(' [>] Got %s', msg.content.toString());
           setTimeout(function () {
             connection.close();
             process.exit(0)

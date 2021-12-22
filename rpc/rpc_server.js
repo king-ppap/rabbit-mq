@@ -39,7 +39,7 @@ async function connectMQ() {
   channel.consume(queue, function reply(msg) {
     let n = parseInt(msg.content.toString());
 
-    console.log(" [.] fib(%d)", n);
+    console.log(" [.] fib(%d) Calculating . . .", n);
 
     let r;
     try {
@@ -53,7 +53,7 @@ async function connectMQ() {
       correlationId: msg.properties.correlationId
     });
 
-    console.log(` [>] fin(${n}) ack ${r} to ${msg.properties.replyTo}`);
+    console.log(` [>] fib(${n}) ack ${r} reply_to=[${msg.properties.replyTo}]`);
     channel.ack(msg);
   });
 }
