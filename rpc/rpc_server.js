@@ -53,7 +53,7 @@ async function connectMQ() {
       correlationId: msg.properties.correlationId
     });
 
-    console.log(` [>] fib(${n}) ack ${r} reply_to=[${msg.properties.replyTo}]`);
+    console.log(` [>] fib(${n}) ack ${r} correlationId=[${msg.properties.correlationId.slice(0, 8)}...] reply_to=[${msg.properties.replyTo}]`);
     channel.ack(msg);
   });
 }

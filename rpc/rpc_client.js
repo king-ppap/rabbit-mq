@@ -28,32 +28,31 @@ async function connectMQ() {
     return error;
   }
 
-  // Generate new queue name like "amqp.gen-Xa2…"
-  channel.assertQueue('', { exclusive: true })
-    .then((q) => {
-      const correlationId = generateUuid();
-      const num = parseInt(args[0]);
+  // Generate new queue name like "amq.gen-gWL..."
+  const q = await channel.assertQueue('', { exclusive: true });
 
-      console.log(` [x] Requesting fib(${num}) reply_to=[${q.queue}]`);
+  const correlationId = generateUuid();
+  const num = parseInt(args[0]);
 
-      channel.consume(q.queue, function (msg) {
-        if (msg.properties.correlationId == correlationId) {
-          console.log(' [>] Got %s', msg.content.toString());
-          setTimeout(function () {
-            connection.close();
-            process.exit(0)
-          }, 500);
-        }
-      }, {
-        noAck: true
-      });
+  console.log(` [x] Requesting fib(${num}) correlationId=[${correlationId.slice(0, 8)}...] reply_to=[${q.queue}]`);
 
-      channel.sendToQueue('rpc_queue',
-        Buffer.from(num.toString()), {
-        correlationId: correlationId,
-        replyTo: q.queue
-      });
-    });
+  await channel.consume(q.queue, function (msg) {
+    if (msg.properties.correlationId == correlationId) {
+      console.log(' [>] Got %s', msg.content.toString());
+      setTimeout(function () {
+        connection.close();
+        process.exit(0)
+      }, 500);
+    }
+  }, {
+    noAck: true
+  });
+
+  channel.sendToQueue('rpc_queue',
+    Buffer.from(num.toString()), {
+    correlationId: correlationId,
+    replyTo: q.queue
+  });
 }
 
 function generateUuid() {
