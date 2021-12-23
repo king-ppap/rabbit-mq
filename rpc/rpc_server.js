@@ -31,30 +31,41 @@ async function connectMQ() {
   // Queue name for RPC
   const queue = 'rpc_queue';
 
+  const dlxExchange = 'dlx_exchange';
+  const dlxQueue = 'dlx_queue';
+
+  await channel.assertExchange(dlxExchange);
+  await channel.assertQueue(dlxQueue, { durable: false });
+  await channel.bindQueue(dlxQueue, dlxExchange);
+
   channel.assertQueue(queue, {
-    durable: false
+    durable: false,
+    deadLetterExchange: dlxExchange,
   });
   channel.prefetch(1);
   console.log(' [x] Awaiting RPC requests');
-  channel.consume(queue, function reply(msg) {
-    let n = parseInt(msg.content.toString());
+  channel.consume(queue, async (msg) => {
+    // let n = parseInt(msg.content.toString());
 
-    console.log(" [.] fib(%d) Calculating . . .", n);
+    // console.log(" [.] fib(%d) Calculating . . .", n);
 
-    let r;
-    try {
-      r = fibonacci(n);
-    } catch (error) {
-      r = error
-    }
+    // let r;
+    // try {
+    //   r = fibonacci(n);
+    // } catch (error) {
+    //   r = error
+    // }
 
-    channel.sendToQueue(msg.properties.replyTo,
-      Buffer.from(r.toString()), {
-      correlationId: msg.properties.correlationId
-    });
+    // channel.sendToQueue(
+    //   msg.properties.replyTo,
+    //   Buffer.from(r.toString()), {
+    //   correlationId: msg.properties.correlationId
+    // });
 
-    console.log(` [>] fib(${n}) ack ${r} correlationId=[${msg.properties.correlationId.slice(0, 8)}...] reply_to=[${msg.properties.replyTo}]`);
-    channel.ack(msg);
+    // console.log(` [>] fib(${n}) ack ${r} correlationId=[${msg.properties.correlationId.slice(0, 8)}...] reply_to=[${msg.properties.replyTo}]`);
+    // channel.ack(msg);
+
+    await channel.nack(msg, true, false);
   });
 }
 
