@@ -35,38 +35,47 @@ async function connectMQ() {
   const dlxQueue = 'dlx_queue';
 
   await channel.assertExchange(dlxExchange);
-  await channel.assertQueue(dlxQueue, { durable: false });
-  await channel.bindQueue(dlxQueue, dlxExchange);
+  await channel.assertQueue(dlxQueue, {
+    durable: true,
+  });
+  await channel.bindQueue(dlxQueue, dlxExchange, queue);
 
-  channel.assertQueue(queue, {
-    durable: false,
+  await channel.assertQueue(queue, {
+    durable: true,
     deadLetterExchange: dlxExchange,
+    deadLetterRoutingKey: queue,
+    messageTtl: 1000,
   });
-  channel.prefetch(1);
+
+  // channel.prefetch(1);
   console.log(' [x] Awaiting RPC requests');
-  channel.consume(queue, async (msg) => {
-    // let n = parseInt(msg.content.toString());
+  // channel.consume(queue, async (msg) => {
+  //   let n = parseInt(msg.content.toString());
 
-    // console.log(" [.] fib(%d) Calculating . . .", n);
+  //   console.log(" [.] fib(%d) Calculating . . .", n);
 
-    // let r;
-    // try {
-    //   r = fibonacci(n);
-    // } catch (error) {
-    //   r = error
-    // }
+  //   let r;
+  //   try {
+  //     // r = fibonacci(n);
+  //     r = 10
+  //   } catch (error) {
+  //     r = error
+  //   }
 
-    // channel.sendToQueue(
-    //   msg.properties.replyTo,
-    //   Buffer.from(r.toString()), {
-    //   correlationId: msg.properties.correlationId
-    // });
+  //   // channel.sendToQueue(
+  //   //   msg.properties.replyTo,
+  //   //   Buffer.from(r.toString()), {
+  //   //   correlationId: msg.properties.correlationId
+  //   // });
 
-    // console.log(` [>] fib(${n}) ack ${r} correlationId=[${msg.properties.correlationId.slice(0, 8)}...] reply_to=[${msg.properties.replyTo}]`);
-    // channel.ack(msg);
+  //   // console.log(` [>] fib(${n}) ack ${r} correlationId=[${msg.properties.correlationId.slice(0, 8)}...] reply_to=[${msg.properties.replyTo}]`);
+  //   // channel.ack(msg);
 
-    await channel.nack(msg, true, false);
-  });
+  //   console.log("ไม่ตอบหรอกนะ");
+  //   // await channel.nack(msg, true, false);
+  //   // await channel.reject(msg, false);
+  //   // console.log(channel);
+  // });
 }
 
 function fibonacci(n) {
