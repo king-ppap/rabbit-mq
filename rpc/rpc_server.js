@@ -31,6 +31,8 @@ async function connectMQ() {
   // Queue name for RPC
   const queue = 'rpc_queue';
 
+  const routingKey = 'dlx_key';
+
   const dlxExchange = 'dlx_exchange';
   const dlxQueue = 'dlx_queue';
 
@@ -38,12 +40,12 @@ async function connectMQ() {
   await channel.assertQueue(dlxQueue, {
     durable: true,
   });
-  await channel.bindQueue(dlxQueue, dlxExchange, queue);
+  await channel.bindQueue(dlxQueue, dlxExchange, routingKey);
 
   await channel.assertQueue(queue, {
     durable: true,
     deadLetterExchange: dlxExchange,
-    deadLetterRoutingKey: queue,
+    deadLetterRoutingKey: routingKey,
     messageTtl: 1000,
   });
 
